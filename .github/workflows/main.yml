@@ -10,23 +10,37 @@ jobs:
     steps:
     - name: Setup User and RDP Environment
       run: |
-        # 1. Create User 'Sora' with sudo (Admin) privileges
+        export DEBIAN_FRONTEND=noninteractive
+        sudo apt update
+        
+        # 1. Install RDP + Xorg Backend + XFCE (Essential parts only)
+        # Added xorgxrdp and xfce4-terminal
+        sudo apt install -y --no-install-recommends xfce4 xfce4-session xfce4-terminal xrdp xorgxrdp
+        
+        # 2. Create User 'Sora'
         sudo useradd -m -s /bin/bash Sora
         echo "Sora:Password123!" | sudo chpasswd
         sudo usermod -aG sudo Sora
         
-        # 2. Install Desktop Environment (XFCE is lightweight and stable for RDP)
-        sudo apt update
-        sudo apt install -y --no-install-recommends xfce4 xfce4-goodies xrdp
-        
-        # 3. Configure XRDP to use XFCE
-        sudo sed -i 's|test -x /etc/X11/Xsession && exec /etc/X11/Xsession|startxfce4|' /etc/xrdp/startwm.sh
-        
-        # 4. USER FIX: Use 'tee' to write to the file with sudo permissions
+        # 3. CONFIGURE SESSION (The 'Blue Screen' Killer)
+        # We tell the system exactly which session to start
         echo "startxfce4" | sudo tee /home/Sora/.xsession
         sudo chown Sora:Sora /home/Sora/.xsession
         
-        # 5. Restart Services
+        # 4. GLOBAL STARTUP FIX
+        # Explicitly call startxfce4 and bypass the broken default logic
+        sudo sed -i 's|test -x /etc/X11/Xsession && exec /etc/X11/Xsession|exec startxfce4|' /etc/xrdp/startwm.sh
+        
+        # 5. Fix for 'Color Managed Device' popup (Prevents login hangs)
+        sudo mkdir -p /etc/polkit-1/localauthority/50-local.d/
+        echo '[Allow Colord]
+        Identity=unix-user:*
+        Action=org.freedesktop.color-manager.create-device;org.freedesktop.color-manager.create-profile;org.freedesktop.color-manager.delete-device;org.freedesktop.color-manager.delete-profile;org.freedesktop.color-manager.modify-device;org.freedesktop.color-manager.modify-profile
+        ResultAny=no
+        ResultInactive=no
+        ResultActive=yes' | sudo tee /etc/polkit-1/localauthority/50-local.d/45-allow-colord.pkla
+
+        # 6. Start Services
         sudo systemctl enable xrdp
         sudo systemctl restart xrdp
         
