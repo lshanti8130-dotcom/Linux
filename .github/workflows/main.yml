@@ -20,13 +20,13 @@ jobs:
         sudo apt install -y --no-install-recommends xfce4 xfce4-goodies xrdp
         
         # 3. Configure XRDP to use XFCE
-        sudo sed -i 's/test -x \/etc\/X11\/Xsession && exec \/etc\/X11\/Xsession/startxfce4/' /etc/xrdp/startwm.sh
+        sudo sed -i 's|test -x /etc/X11/Xsession && exec /etc/X11/Xsession|startxfce4|' /etc/xrdp/startwm.sh
         
-        # 4. USER FIX: Create the session file for Sora
-        echo "startxfce4" > /home/Sora/.xsession
+        # 4. USER FIX: Use 'tee' to write to the file with sudo permissions
+        echo "startxfce4" | sudo tee /home/Sora/.xsession
         sudo chown Sora:Sora /home/Sora/.xsession
         
-        # 5. Start Service
+        # 5. Restart Services
         sudo systemctl enable xrdp
         sudo systemctl restart xrdp
         
