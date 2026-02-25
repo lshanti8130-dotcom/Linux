@@ -20,9 +20,15 @@ jobs:
         sudo apt install -y --no-install-recommends xfce4 xfce4-goodies xrdp
         
         # 3. Configure XRDP to use XFCE
-        echo "xfce4-session" > ~/.xsession
+        sudo sed -i 's/test -x \/etc\/X11\/Xsession && exec \/etc\/X11\/Xsession/startxfce4/' /etc/xrdp/startwm.sh
+        
+        # 4. USER FIX: Create the session file for Sora
+        echo "startxfce4" > /home/Sora/.xsession
+        sudo chown Sora:Sora /home/Sora/.xsession
+        
+        # 5. Start Service
         sudo systemctl enable xrdp
-        sudo systemctl start xrdp
+        sudo systemctl restart xrdp
         
         # 4. Open Firewall (ufw is the standard Ubuntu firewall)
         sudo ufw allow 3389/tcp
