@@ -18,8 +18,8 @@ jobs:
         # Added dbus-x11 and x11-xserver-utils
         sudo apt install -y --no-install-recommends \
           xfce4 xfce4-session xfce4-terminal xrdp xorgxrdp \
-          dbus-x11 x11-xserver-utils \
-          build-essential linux-headers-$(uname -r)
+          dbus-x11 x11-xserver-utils 
+          
         
         # 2. Create User 'Sora'
         sudo useradd -m -s /bin/bash Sora
