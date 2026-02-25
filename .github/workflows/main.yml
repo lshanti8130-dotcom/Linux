@@ -11,27 +11,30 @@ jobs:
     - name: Setup User and RDP Environment
       run: |
         export DEBIAN_FRONTEND=noninteractive
+        export DEBIAN_FRONTEND=noninteractive
         sudo apt update
         
-        # 1. Install RDP + Xorg Backend + XFCE (Essential parts only)
-        # Added xorgxrdp and xfce4-terminal
-        sudo apt install -y --no-install-recommends xfce4 xfce4-session xfce4-terminal xrdp xorgxrdp
+        # 1. Install RDP + XFCE + DBUS-X11 (Crucial for the 'failsafe' error)
+        # Added dbus-x11 and x11-xserver-utils
+        sudo apt install -y --no-install-recommends \
+          xfce4 xfce4-session xfce4-terminal xrdp xorgxrdp \
+          dbus-x11 x11-xserver-utils \
+          build-essential linux-headers-$(uname -r)
         
         # 2. Create User 'Sora'
         sudo useradd -m -s /bin/bash Sora
         echo "Sora:Password123!" | sudo chpasswd
         sudo usermod -aG sudo Sora
         
-        # 3. CONFIGURE SESSION (The 'Blue Screen' Killer)
-        # We tell the system exactly which session to start
-        echo "startxfce4" | sudo tee /home/Sora/.xsession
+        # 3. FIX THE FAILSAFE ERROR: Launch XFCE with DBUS
+        # Wrapping 'startxfce4' with 'dbus-launch' prevents the error in your image
+        echo "exec dbus-launch --exit-with-session startxfce4" | sudo tee /home/Sora/.xsession
         sudo chown Sora:Sora /home/Sora/.xsession
         
         # 4. GLOBAL STARTUP FIX
-        # Explicitly call startxfce4 and bypass the broken default logic
         sudo sed -i 's|test -x /etc/X11/Xsession && exec /etc/X11/Xsession|exec startxfce4|' /etc/xrdp/startwm.sh
         
-        # 5. Fix for 'Color Managed Device' popup (Prevents login hangs)
+        # 5. Prevent the Polkit/Color popup
         sudo mkdir -p /etc/polkit-1/localauthority/50-local.d/
         echo '[Allow Colord]
         Identity=unix-user:*
@@ -40,7 +43,7 @@ jobs:
         ResultInactive=no
         ResultActive=yes' | sudo tee /etc/polkit-1/localauthority/50-local.d/45-allow-colord.pkla
 
-        # 6. Start Services
+        # 6. Restart Services
         sudo systemctl enable xrdp
         sudo systemctl restart xrdp
         
