@@ -17,7 +17,7 @@ jobs:
         
         # 2. Install Desktop Environment (XFCE is lightweight and stable for RDP)
         sudo apt update
-        sudo apt install -y xfce4 xfce4-goodies xrdp
+        sudo apt install -y --no-install-recommends xfce4 xfce4-goodies xrdp
         
         # 3. Configure XRDP to use XFCE
         echo "xfce4-session" > ~/.xsession
