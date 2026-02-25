@@ -1,0 +1,44 @@
+name: Test
+on: 
+  push:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Setup User and RDP Environment
+      run: |
+        # 1. Create User 'Sora' with sudo (Admin) privileges
+        sudo useradd -m -s /bin/bash Sora
+        echo "Sora:Password123!" | sudo chpasswd
+        sudo usermod -aG sudo Sora
+        
+        # 2. Install Desktop Environment (XFCE is lightweight and stable for RDP)
+        sudo apt update
+        sudo apt install -y xfce4 xfce4-goodies xrdp
+        
+        # 3. Configure XRDP to use XFCE
+        echo "xfce4-session" > ~/.xsession
+        sudo systemctl enable xrdp
+        sudo systemctl start xrdp
+        
+        # 4. Open Firewall (ufw is the standard Ubuntu firewall)
+        sudo ufw allow 3389/tcp
+
+    - name: Cloudflare Tunnel (Linux Setup)
+      run: |
+        echo "=== Cloudflare Tunnel ==="
+        # Download the .deb package for Ubuntu
+        curl -L https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb -o cloudflared.deb
+        sudo dpkg -i cloudflared.deb
+        
+        # Install the service with your token
+        sudo cloudflared service install eyJhIjoiZjhkNzdkY2U2ZmNjM2MyNDE3OTI5MTJiYzk4OWY3ZjYiLCJ0IjoiZDU1YzcxMmUtNjZhZi00OTNjLTg3ZGUtNjNiOGQ1YjNlN2Y2IiwicyI6IlpEY3pNV1ZoWWpNdE16aGhZUzAwT0dRM0xUazBObUV0WkdJd01EWTFNakk0WWpOaCJ9
+        
+        # Check status
+        systemctl status cloudflared
+    - name: Keep Alive
+      timeout-minutes: 360
+      run: sleep 21600
