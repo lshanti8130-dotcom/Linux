@@ -27,14 +27,26 @@ jobs:
         sudo usermod -aG sudo Sora
         
         # 3. FIX THE FAILSAFE ERROR: Launch XFCE with DBUS
-        # Wrapping 'startxfce4' with 'dbus-launch' prevents the error in your image
-        echo "exec dbus-launch --exit-with-session startxfce4" | sudo tee /home/Sora/.xsession
+        sudo bash -c 'cat > /home/Sora/.xsession <<EOF
+        export XDG_SESSION_TYPE=x11
+        export XDG_CURRENT_DESKTOP=XFCE
+        exec dbus-launch --exit-with-session startxfce4
+        EOF'
         sudo chown Sora:Sora /home/Sora/.xsession
         
-        # 4. GLOBAL STARTUP FIX
-        sudo sed -i 's|test -x /etc/X11/Xsession && exec /etc/X11/Xsession|exec startxfce4|' /etc/xrdp/startwm.sh
-        
-        # 5. Prevent the Polkit/Color popup
+        # 4. GLOBAL STARTWM FIX: Remove the logic that looks for "failsafe"
+        # We overwrite the entire file to ensure no hidden scripts interfere
+        sudo bash -c 'cat > /etc/xrdp/startwm.sh <<EOF
+        #!/bin/sh
+        if [ -r /etc/default/locale ]; then
+          . /etc/default/locale
+          export LANG LANGUAGE
+        fi
+        exec /etc/X11/Xsession
+        EOF'
+        sudo chmod +x /etc/xrdp/startwm.sh
+
+        # 5. Polkit fix (Color popup)
         sudo mkdir -p /etc/polkit-1/localauthority/50-local.d/
         echo '[Allow Colord]
         Identity=unix-user:*
@@ -43,7 +55,7 @@ jobs:
         ResultInactive=no
         ResultActive=yes' | sudo tee /etc/polkit-1/localauthority/50-local.d/45-allow-colord.pkla
 
-        # 6. Restart Services
+        # 6. Restart Everything
         sudo systemctl enable xrdp
         sudo systemctl restart xrdp
         
