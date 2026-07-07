@@ -10,54 +10,43 @@ jobs:
     steps:
     - name: Setup User and RDP Environment
       run: |
-        export DEBIAN_FRONTEND=noninteractive
-        export DEBIAN_FRONTEND=noninteractive
+        
         sudo apt update
-        
-        # 1. Install RDP + XFCE + DBUS-X11 (Crucial for the 'failsafe' error)
-        # Added dbus-x11 and x11-xserver-utils
         sudo apt install -y --no-install-recommends \
-          xfce4 xfce4-session xfce4-terminal xrdp xorgxrdp \
-          dbus-x11 x11-xserver-utils 
-          
-        
-        # 2. Create User 'Sora'
+        i3-wm \
+        i3status \
+        i3lock \
+        xterm \
+        xrdp \
+        xorgxrdp \
+        dbus-x11 \
+        x11-xserver-utils
+
         sudo useradd -m -s /bin/bash Sora
         echo "Sora:Password123!" | sudo chpasswd
         sudo usermod -aG sudo Sora
-        
-        # 3. FIX THE FAILSAFE ERROR: Launch XFCE with DBUS
+
         sudo bash -c 'cat > /home/Sora/.xsession <<EOF
         export XDG_SESSION_TYPE=x11
-        export XDG_CURRENT_DESKTOP=XFCE
-        exec dbus-launch --exit-with-session startxfce4
+        export XDG_CURRENT_DESKTOP=i3
+        exec dbus-launch --exit-with-session i3
         EOF'
         sudo chown Sora:Sora /home/Sora/.xsession
-        
-        # 4. GLOBAL STARTWM FIX: Remove the logic that looks for "failsafe"
-        # We overwrite the entire file to ensure no hidden scripts interfere
+      
         sudo bash -c 'cat > /etc/xrdp/startwm.sh <<EOF
         #!/bin/sh
         if [ -r /etc/default/locale ]; then
-          . /etc/default/locale
+        . /etc/default/locale
           export LANG LANGUAGE
         fi
         exec /etc/X11/Xsession
         EOF'
         sudo chmod +x /etc/xrdp/startwm.sh
-
-        # 5. Polkit fix (Color popup)
-        sudo mkdir -p /etc/polkit-1/localauthority/50-local.d/
-        echo '[Allow Colord]
-        Identity=unix-user:*
-        Action=org.freedesktop.color-manager.create-device;org.freedesktop.color-manager.create-profile;org.freedesktop.color-manager.delete-device;org.freedesktop.color-manager.delete-profile;org.freedesktop.color-manager.modify-device;org.freedesktop.color-manager.modify-profile
-        ResultAny=no
-        ResultInactive=no
-        ResultActive=yes' | sudo tee /etc/polkit-1/localauthority/50-local.d/45-allow-colord.pkla
-
-        # 6. Restart Everything
-        sudo systemctl enable xrdp
         sudo systemctl restart xrdp
+    
+        # 6. Restart Everything
+        #sudo systemctl enable xrdp
+        #sudo systemctl restart xrdp
         
         # 4. Open Firewall (ufw is the standard Ubuntu firewall)
         sudo ufw allow 3389/tcp
@@ -77,3 +66,4 @@ jobs:
     - name: Keep Alive
       timeout-minutes: 360
       run: sleep 21600
+      
