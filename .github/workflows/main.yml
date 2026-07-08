@@ -32,6 +32,14 @@ jobs:
         exec dbus-launch --exit-with-session i3
         EOF'
         sudo chown Sora:Sora /home/Sora/.xsession
+
+        sudo bash -c 'cat > /home/Sora/.xsession <<EOF
+        export HOME=/home/Sora
+        export XDG_CONFIG_HOME=/home/Sora/.config
+        export XDG_SESSION_TYPE=x11
+        export XDG_CURRENT_DESKTOP=i3
+        exec dbus-launch --exit-with-session i3
+        EOF'
       
         sudo bash -c 'cat > /etc/xrdp/startwm.sh <<EOF
         #!/bin/sh
