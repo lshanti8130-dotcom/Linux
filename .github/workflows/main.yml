@@ -63,7 +63,7 @@ jobs:
         
         # Check status
         systemctl status cloudflared
-    - name: Ricing background: 
+    - name: Ricing
       run: |
 
         WALLPAPER_URL="https://r4.wallpaperflare.com/wallpaper/953/495/816/anime-anime-girls-barefoot-bubbles-wallpaper-2603c7ea3b2afe44b6f5cee1ac09964b.jpg"
