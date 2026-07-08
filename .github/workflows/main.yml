@@ -65,7 +65,9 @@ jobs:
         systemctl status cloudflared
     - name: Ricing
       run: |
-
+        sudo -u Sora mkdir -p /home/Sora/.config/i3
+        sudo cp /etc/i3/config /home/Sora/.config/i3/config
+        sudo chown Sora:Sora /home/Sora/.config/i3/config
         WALLPAPER_URL="https://r4.wallpaperflare.com/wallpaper/953/495/816/anime-anime-girls-barefoot-bubbles-wallpaper-2603c7ea3b2afe44b6f5cee1ac09964b.jpg"
         sudo -u Sora curl -L -o /home/Sora/wallpaper.jpg "$WALLPAPER_URL"
         sudo sed -i 's/bindsym \$mod+Return exec i3-sensible-terminal/bindsym \$mod+Return exec kitty/g' /home/Sora/.config/i3/config
