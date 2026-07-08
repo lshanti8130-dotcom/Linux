@@ -12,18 +12,10 @@ jobs:
       run: |
         
         sudo apt update
-        sudo apt install -y --no-install-recommends \
-        i3-wm \
-        i3status \
-        i3lock \
-        xterm \
-        xrdp \
-        xorgxrdp \
-        dbus-x11 \
-        x11-xserver-utils
+        sudo apt install -y --no-install-recommends i3-wm i3status i3lock xterm xrdp xorgxrdp dbus-x11 x11-xserver-utils kitty
 
         sudo useradd -m -s /bin/bash Sora
-        echo "Sora:Password123!" | sudo chpasswd
+        echo "Sora:kali" | sudo chpasswd
         sudo usermod -aG sudo Sora
 
         sudo bash -c 'cat > /home/Sora/.xsession <<EOF
