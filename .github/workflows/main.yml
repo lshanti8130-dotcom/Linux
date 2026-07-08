@@ -32,10 +32,6 @@ jobs:
         export XDG_CURRENT_DESKTOP=i3
         exec dbus-launch --exit-with-session i3
         EOF'
-        WALLPAPER_URL="https://r4.wallpaperflare.com/wallpaper/953/495/816/anime-anime-girls-barefoot-bubbles-wallpaper-2603c7ea3b2afe44b6f5cee1ac09964b.jpg"
-
-        sudo sed -i 's/bindsym \$mod+Return exec i3-sensible-terminal/bindsym \$mod+Return exec kitty/g' /home/Sora/.config/i3/config
-        sudo -u Sora curl -L -o /home/Sora/Downloads/wallpaper.jpg "$WALLPAPER_URL"
       
         sudo bash -c 'cat > /etc/xrdp/startwm.sh <<EOF
         #!/bin/sh
@@ -67,6 +63,16 @@ jobs:
         
         # Check status
         systemctl status cloudflared
+    - name: Ricing background: 
+      run: |
+
+        WALLPAPER_URL="https://r4.wallpaperflare.com/wallpaper/953/495/816/anime-anime-girls-barefoot-bubbles-wallpaper-2603c7ea3b2afe44b6f5cee1ac09964b.jpg"
+        sudo -u Sora curl -L -o /home/Sora/Downloads/wallpaper.jpg "$WALLPAPER_URL"
+        sudo sed -i 's/bindsym \$mod+Return exec i3-sensible-terminal/bindsym \$mod+Return exec kitty/g' /home/Sora/.config/i3/config
+        sudo bash -c 'cat >> /home/Sora/.config/i3/config <<EOF 
+        exec_always --no-startup-id feh --bg-scale /home/Sora/Downloads/wallpaper.jpg
+        EOF'
+      
     - name: Keep Alive
       timeout-minutes: 360
       run: sleep 21600
