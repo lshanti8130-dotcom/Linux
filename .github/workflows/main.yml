@@ -42,11 +42,11 @@ jobs:
         exec /etc/X11/Xsession
         EOF'
         sudo chmod +x /etc/xrdp/startwm.sh
-        sudo systemctl restart xrdp
+        #sudo systemctl restart xrdp
     
         # 6. Restart Everything
-        #sudo systemctl enable xrdp
-        #sudo systemctl restart xrdp
+        sudo systemctl enable xrdp
+        sudo systemctl restart xrdp
         
         # 4. Open Firewall (ufw is the standard Ubuntu firewall)
         sudo ufw allow 3389/tcp
